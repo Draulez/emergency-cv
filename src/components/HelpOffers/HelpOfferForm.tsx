@@ -8,6 +8,8 @@ import { Town } from '@/types/Town';
 import Unauthorized from '@/components/Unauthorized';
 import { useTowns } from '@/context/TownProvider';
 import { toast } from 'sonner';
+import { CheckboxLegalText } from '../CheckboxLegalText';
+import { InfoIcon } from 'lucide-react';
 
 export type HelpOfferFormData = {
   aceptaProtocolo: boolean;
@@ -39,7 +41,7 @@ export default function HelpOfferForm({ data, buttonText, submitMutation }: Help
   const [formData, setFormData] = useState<HelpOfferFormData>({
     nombre: data?.name || user?.user_metadata?.full_name || user?.user_metadata?.nombre || '',
     telefono: data?.contact_info || user?.user_metadata?.telefono || '',
-    ubicacion: data?.location || '',
+    ubicacion: '',
     tiposAyuda: data?.help_type || [],
     otraAyuda: data?.other_help || '',
     vehiculo: data?.resources?.vehicle || '',
@@ -56,7 +58,7 @@ export default function HelpOfferForm({ data, buttonText, submitMutation }: Help
     setFormData({
       nombre: data?.name || user?.user_metadata?.full_name || user?.user_metadata?.nombre || '',
       telefono: data?.contact_info || user?.user_metadata?.telefono || '',
-      ubicacion: data?.location || '',
+      ubicacion: '',
       tiposAyuda: data?.help_type || [],
       otraAyuda: data?.other_help || '',
       vehiculo: data?.resources?.vehicle || '',
@@ -248,8 +250,8 @@ export default function HelpOfferForm({ data, buttonText, submitMutation }: Help
         </div>
 
         {/* Aceptación del protocolo */}
-        <div className="flex items-start">
-          <label className="ml-2 text-sm text-gray-700 flex items-start gap-2 cursor-pointer">
+        <div className="flex items-start flex-col gap-y-2">
+          <label className="text-sm text-gray-700 flex items-start gap-2 cursor-pointer">
             <input
               type="checkbox"
               checked={formData.aceptaProtocolo}
@@ -258,6 +260,7 @@ export default function HelpOfferForm({ data, buttonText, submitMutation }: Help
             />
             Acepto seguir el protocolo de actuación y las indicaciones de las autoridades competentes.
           </label>
+          <CheckboxLegalText />
         </div>
       </div>
 
@@ -269,6 +272,15 @@ export default function HelpOfferForm({ data, buttonText, submitMutation }: Help
         >
           {buttonText[0]}
         </button>
+      </div>
+      <div className="mt-6 flex items-start gap-4">
+        <InfoIcon className="h-6 w-6 text-blue-400 flex-shrink-0" />
+        <div>
+          <p className="text-sm text-gray-700">
+            Las ofertas de ayuda se borrarán automáticamente a los 7 días. Si lo deseas, tras este plazo puedes crear
+            una nueva oferta con datos actualizados.
+          </p>
+        </div>
       </div>
     </form>
   );

@@ -19,12 +19,15 @@ import {
   Scale,
   MessageCircleQuestion,
   School,
+  Building2
 } from 'lucide-react';
 import UserInfo from '../UserInfo';
-import { useSession } from '@/context/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
-import { HelpRequestData } from '@/types/Requests';
-import { helpRequestService } from '@/lib/service';
+import { SelectedHelpData } from '@/types/Requests';
+import { getOffersByUser, getRequestsByUser } from '@/lib/actions';
+import { useSession } from '../../context/SessionProvider';
+
+export const SOLICITUDES_PATH = '/casos-activos/solicitudes';
 
 type SidebarProps = {
   isOpen: boolean;
@@ -34,16 +37,13 @@ export default function Sidebar({ isOpen, toggleAction }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const session = useSession();
-
-  const userId = session.user?.id;
-
-  const { data: requests } = useQuery<HelpRequestData[]>({
-    queryKey: ['help_requests', { user_id: userId, type: 'necesita' }],
-    queryFn: () => helpRequestService.getRequestsByUser(userId),
+  const { data: requests } = useQuery<SelectedHelpData[]>({
+    queryKey: ['help_requests', { user_id: session.user?.id, type: 'necesita' }],
+    queryFn: () => getRequestsByUser(session.user?.id),
   });
-  const { data: offers } = useQuery<HelpRequestData[]>({
-    queryKey: ['help_requests', { user_id: userId, type: 'ofrece' }],
-    queryFn: () => helpRequestService.getOffersByUser(userId),
+  const { data: offers } = useQuery<SelectedHelpData[]>({
+    queryKey: ['help_requests', { user_id: session.user?.id, type: 'ofrece' }],
+    queryFn: () => getOffersByUser(session.user?.id),
   });
   const hasRequests = (requests?.length ?? 0) > 0;
   const hasOffers = (offers?.length ?? 0) > 0;
@@ -60,9 +60,10 @@ export default function Sidebar({ isOpen, toggleAction }: SidebarProps) {
       icon: AlertCircle,
       title: 'Casos Activos',
       description: 'Ver todos los casos activos',
-      path: '/casos-activos/solicitudes',
+      path: SOLICITUDES_PATH,
       color: 'text-orange-600',
       highlight: true,
+      closeOnClick: true,
     },
     {
       icon: Inbox,
@@ -127,6 +128,14 @@ export default function Sidebar({ isOpen, toggleAction }: SidebarProps) {
       color: 'text-gray-800',
     },
     {
+      icon: Building2,
+      title: 'Ayuda a Empresas',
+      description: 'Colabora con empresas afectadas',
+      path: 'https://solidana.es/',
+      color: 'text-gray-800',
+      isHref: true,
+    },
+    {
       icon: Scale,
       title: 'Servicio Notarial',
       description: 'Servicio notarial gratuito',
@@ -176,7 +185,7 @@ export default function Sidebar({ isOpen, toggleAction }: SidebarProps) {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full bg-white shadow-xl z-30 
+        className={`fixed top-0 left-0 h-full bg-white shadow-xl z-30
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           w-72 flex flex-col`}
@@ -219,8 +228,8 @@ export default function Sidebar({ isOpen, toggleAction }: SidebarProps) {
                   <button
                     key={item.path}
                     onClick={() => {
-                      router.push(item?.isLogged && !userId ? '/auth?redirect=' + item.path : item.path);
-                      if (window.innerWidth < 768) toggleAction();
+                      router.push(item?.isLogged && !session.user?.id ? '/auth?redirect=' + item.path : item.path);
+                      if (window.innerWidth < 768 || item.closeOnClick) toggleAction();
                     }}
                     className={`w-full text-left transition-colors ${
                       item.isHome

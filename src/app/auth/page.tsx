@@ -2,8 +2,8 @@
 import { Suspense, useEffect } from 'react';
 import Login from '../../components/auth/Login';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authService } from '@/lib/service';
 import { AlertTriangle } from 'lucide-react';
+import { useSession } from '../../context/SessionProvider';
 
 export default function AUthPage() {
   return (
@@ -14,18 +14,15 @@ export default function AUthPage() {
 }
 
 function Auth() {
+  const session = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
   useEffect(() => {
-    async function fetchSession() {
-      const { data: session } = await authService.getSessionUser();
-      if (session.user) {
-        router.push(redirect);
-      }
+    if (session.user) {
+      router.push(redirect);
     }
-    fetchSession();
-  });
+  }, [session]);
 
   return (
     <section className="mx-6 lg:m-16">
@@ -33,10 +30,7 @@ function Auth() {
         <div className="flex items-start">
           <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
           <div>
-            <h2 className="text-red-800 font-bold">
-              POR MOTIVOS DE SEGURIDAD HEMOS DESHABILITADO LAS PUBLICACIONES ANONIMAS
-            </h2>
-            <p className="text-red-700 text-sm mt-1">Ahora debes registrarte para crear una publicacion.</p>
+            <p className="text-red-700 text-sm mt-1">Debes registrarte para crear una publicacion.</p>
             <p className="text-red-900 text-sm mt-1 font-medium">
               Por dificultades tecnicas, por favor escríbenos a info@ajudadana.es
             </p>

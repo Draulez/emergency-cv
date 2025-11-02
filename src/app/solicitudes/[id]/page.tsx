@@ -1,37 +1,49 @@
 'use client';
+
 import { ArrowLeft } from 'lucide-react';
-import SolicitudCard from '@/components/SolicitudCard';
-import { useQuery } from '@tanstack/react-query';
-import { HelpRequestData } from '@/types/Requests';
-import { helpRequestService } from '@/lib/service';
+import SolicitudCard from '@/components/solicitudes/SolicitudCard';
 import { useParams } from 'next/navigation';
 import SolicitudComments from '@/components/Comments/SolicitudComments';
+import { useEffect, useState } from 'react';
+import { SelectedHelpDataWAssignment } from '../../../types/Requests';
+import { getOneWithAssignments } from '@/lib/actions';
 
 export default function CasoDetalle() {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [data, setData] = useState<SelectedHelpDataWAssignment | null>(null);
   const { id } = useParams<{ id: string }>();
 
-  const {
-    data: request,
-    isLoading,
-    error,
-  } = useQuery<HelpRequestData>({
-    queryKey: ['help_requests', { id: id }],
-    queryFn: () => helpRequestService.getOne(Number(id)),
-  });
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
 
-  if (isLoading) {
+        const requestResponse = await getOneWithAssignments(Number(id));
+        setData(requestResponse as SelectedHelpDataWAssignment);
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error general:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
-  if (error || request === undefined) {
+  if (data === null) {
     return (
       <div className="space-y-6 mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex justify-start">
           <button
-            className="flex flex-row items-center px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            className="ml-10 sm:ml-4 flex flex-row items-center px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
             onClick={() => history.back()}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -48,15 +60,15 @@ export default function CasoDetalle() {
     <div className="space-y-6 mx-auto max-w-7xl px-4 sm:px-6">
       <div className="flex justify-start">
         <button
-          className="flex flex-row items-center px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          className="ml-10 sm:ml-4 flex flex-row items-center px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           onClick={() => history.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver
         </button>
       </div>
-      <SolicitudCard caso={request} showLink={false} showEdit={true} />
-      <SolicitudComments request={request} />
+      <SolicitudCard caso={data} showLink={false} showEdit={true} />
+      <SolicitudComments request={data} />
     </div>
   );
 }

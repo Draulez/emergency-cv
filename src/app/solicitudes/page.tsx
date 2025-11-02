@@ -1,12 +1,12 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import SolicitudCard from '@/components/SolicitudCard';
+import SolicitudCard from '@/components/solicitudes/SolicitudCard';
 import { useSession } from '@/context/SessionProvider';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { HelpRequestData } from '@/types/Requests';
-import { helpRequestService } from '@/lib/service';
+import { SelectedHelpDataWAssignment } from '@/types/Requests';
+import { getSolicitudesWAssignemntsByUser } from '@/lib/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +18,9 @@ export default function ListaSolicitudes() {
     data: requests,
     isLoading,
     error,
-  } = useQuery<HelpRequestData[]>({
+  } = useQuery<SelectedHelpDataWAssignment[]>({
     queryKey: ['help_requests', { user_id: userId, type: 'necesita' }],
-    queryFn: () => helpRequestService.getRequestsByUser(userId),
+    queryFn: () => getSolicitudesWAssignemntsByUser(userId || ''),
   });
 
   if (isLoading) {

@@ -31,8 +31,8 @@ export const tiposAyudaArray: TipoAyudaOption[] = Object.entries(tiposAyudaOptio
 }));
 
 export const CrmStatusActive = 'active';
-export const CrmStatusFollowUp = 'followup';
-export const CrmStatusAssigned = 'assigned';
+export const CrmStatusFollowUp = 'volver a llamar';
+export const CrmStatusAssigned = 'asignado';
 export const CrmStatusProgress = 'progress';
 export const CrmStatusFinished = 'finished';
 
@@ -48,3 +48,6 @@ export const UserRoles = {
   admin: 'admin',
   moderator: 'moderator',
 };
+
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_ENV === 'production' ? process.env.NEXT_PUBLIC_BASE_URL! : 'http://127.0.0.1:3000';

@@ -11,6 +11,8 @@ import AddressMap, { AddressDescriptor } from '@/components/AddressMap';
 import { LngLat } from '@/components/map/GeolocationMap';
 import { useSession } from '@/context/SessionProvider';
 import Unauthorized from '@/components/Unauthorized';
+import { CheckboxLegalText } from '../CheckboxLegalText';
+import { InfoIcon } from 'lucide-react';
 
 export type HelpRequestFormData = {
   nombre: string;
@@ -46,7 +48,7 @@ export default function HelpRequestForm({
   const [formData, setFormData] = useState<HelpRequestFormData>({
     nombre: request?.name || user?.user_metadata?.full_name || user?.user_metadata?.nombre || '',
     telefono: request?.contact_info || user?.user_metadata?.telefono || '',
-    ubicacion: request?.location || '',
+    ubicacion: '',
     coordinates: { lat: 0, lng: 0 },
     tiposAyuda: request?.help_type || [],
     numeroPersonas: request?.number_of_people || 1,
@@ -63,7 +65,7 @@ export default function HelpRequestForm({
     setFormData({
       nombre: request?.name || user?.user_metadata?.full_name || user?.user_metadata?.nombre || '',
       telefono: request?.contact_info || user?.user_metadata?.telefono || '',
-      ubicacion: request?.location || '',
+      ubicacion: '',
       coordinates: { lat: 0, lng: 0 },
       tiposAyuda: request?.help_type || [],
       numeroPersonas: request?.number_of_people || 1,
@@ -251,8 +253,8 @@ export default function HelpRequestForm({
         />
       </div>
       {/* Consentimiento */}
-      <div className="flex items-start">
-        <label className="ml-2 block text-sm text-gray-700 cursor-pointer">
+      <div className="flex items-start flex-col gap-y-2">
+        <label className="block text-sm text-gray-700 cursor-pointer">
           <input
             type="checkbox"
             name="consentimiento"
@@ -263,6 +265,7 @@ export default function HelpRequestForm({
           Doy mi consentimiento para el tratamiento de los datos proporcionados y confirmo que la información
           proporcionada es verídica.
         </label>
+        <CheckboxLegalText />
       </div>
 
       <button
@@ -274,6 +277,15 @@ export default function HelpRequestForm({
       >
         {isSubmitting ? buttonText[1] : buttonText[0]}
       </button>
+      <div className="pb-3 flex gap-4">
+        <InfoIcon className="h-6 w-6 text-blue-400 flex-shrink-0" />
+        <div>
+          <p className="text-sm text-gray-700">
+            Las solicitudes de ayuda se borrarán automáticamente a los 7 días. Si tras este plazo sigues necesitando
+            ayuda, crea una nueva solicitud con datos actualizados.
+          </p>
+        </div>
+      </div>
     </form>
   );
 }

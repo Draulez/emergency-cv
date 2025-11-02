@@ -1,26 +1,29 @@
-import { AlertTriangle, MapPin, MapPinned, Megaphone, Phone, Users } from 'lucide-react';
+import { AlertTriangle, MapPinned, Megaphone, Phone, Users } from 'lucide-react';
 import { tiposAyudaOptions } from '@/helpers/constants';
 import Link from 'next/link';
 import { useSession } from '@/context/SessionProvider';
-import { HelpRequestAdditionalInfo, HelpRequestData } from '@/types/Requests';
+import { HelpRequestAdditionalInfo, SelectedHelpDataWAssignment } from '@/types/Requests';
 import AsignarSolicitudButton from '@/components/AsignarSolicitudButton';
-import SolicitudHelpCount from '@/components/SolicitudHelpCount';
 import PhoneInfo from '@/components/PhoneInfo';
-import DeleteHelpRequest from './DeleteHelpRequest';
+import DeleteHelpRequest from '../DeleteHelpRequest';
 import { textWithEllipsis } from '@/helpers/utils';
 import { useTowns } from '@/context/TownProvider';
 import { useRole } from '@/context/RoleProvider';
-import { useState } from 'react';
-import ChangeUrgencyHelpRequest from './ChangeUrgencyHelpRequest';
-import ChangeStatusButton from './ChangeStatusButton';
-import ChangeCRMStatus from './ChangeCRMStatus';
+import { Fragment, useState } from 'react';
+import ChangeUrgencyHelpRequest from '../ChangeUrgencyHelpRequest';
+import ChangeStatusButton from '../ChangeStatusButton';
+import ChangeCRMStatus from '../ChangeCRMStatus';
 import { UserRoles } from '@/helpers/constants';
+import CRMNotes from '@/components/CRMNotes';
+import CRMLog from '@/components/CRMLog';
+import { getHighlightedText } from '@/helpers/format';
 
 type SolicitudCardProps = {
-  caso: HelpRequestData;
+  caso: SelectedHelpDataWAssignment;
   showLink?: boolean;
   showEdit?: boolean;
   format?: 'small' | 'large';
+  highlightedText?: string;
 };
 
 export default function SolicitudCard({
@@ -28,18 +31,21 @@ export default function SolicitudCard({
   showLink = true,
   showEdit = false,
   format = 'large',
+  highlightedText = '',
 }: SolicitudCardProps) {
   const session = useSession();
   const role = useRole();
   const { getTownById } = useTowns();
   const additionalInfo = caso.additional_info as HelpRequestAdditionalInfo;
-  const special_situations = 'special_situations' in additionalInfo ? additionalInfo.special_situations : undefined;
+  const special_situations = additionalInfo['special_situations'] ? additionalInfo.special_situations : undefined;
   const isAdmin = role === UserRoles.admin;
   const isCrmUser = role === UserRoles.moderator;
   const [deleted, setDeleted] = useState(false);
   const isMyRequest = session.user?.id && session.user.id === caso.user_id;
   const [updateUrgency, setUpdateUrgency] = useState(caso.urgency);
   const [updateStatus, setUpdateStatus] = useState(caso.status);
+
+  const description = format === 'small' ? textWithEllipsis(caso.description, 250) : caso.description;
   return (
     !deleted && (
       <div key={caso.id} className="rounded-2xl bg-white shadow-lg ring-1 ring-gray-900/5">
@@ -72,7 +78,11 @@ export default function SolicitudCard({
             </div>
           </div>
           <div className="flex flex-row justify-center items-center gap-2">
-            <SolicitudHelpCount id={caso.id} />
+            <div
+              className={`flex items-center justify-center rounded-full px-4 py-2 ${caso.assignments_count === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}
+            >
+              <span className={`text-sm font-bold`}>{caso.assignments_count} VOLUNTARIOS</span>
+            </div>
             <div
               className={`flex items-center justify-center rounded-full px-4 py-2 ${
                 updateStatus === 'finished'
@@ -90,7 +100,7 @@ export default function SolicitudCard({
         </div>
         <div className="px-6 py-4">
           <p className="text-gray-700 first-letter:capitalize" style={{ wordBreak: 'break-word' }}>
-            {format === 'small' ? textWithEllipsis(caso.description, 250) : caso.description}
+            {description && getHighlightedText(description, highlightedText)}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-start md:items-end gap-4 px-6 pb-4">
@@ -103,12 +113,6 @@ export default function SolicitudCard({
                 </span>
               </div>
             )}
-            <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0 mt-1" />
-              <span className="break-words">
-                <span className="font-semibold">Ubicación:</span> {caso.location}
-              </span>
-            </div>
             {caso.contact_info && (
               <div className="flex items-start gap-2">
                 <Phone className="h-4 w-4 text-gray-500 flex-shrink-0 mt-1" />
@@ -130,7 +134,7 @@ export default function SolicitudCard({
                 </span>
               </div>
             )}
-            {caso.number_of_people && (
+            {caso.number_of_people !== null && caso.number_of_people > 0 && (
               <div className="flex items-start gap-2 pb-2">
                 <Users className="h-4 w-4 text-gray-500 flex-shrink-0 mt-1" />
                 <span className="break-words">
@@ -205,7 +209,7 @@ export default function SolicitudCard({
                 helpRequestId={caso.id}
               />
             )}
-            {isCrmUser && (
+            {(isCrmUser || isAdmin) && (
               <ChangeCRMStatus
                 onStatusUpdate={setUpdateStatus}
                 currentStatus={updateStatus}
@@ -213,6 +217,8 @@ export default function SolicitudCard({
                 helpRequestId={caso.id}
               />
             )}
+            {(isCrmUser || isAdmin) && <CRMNotes helpRequestId={caso.id} currentNotes={caso.notes} />}
+            {(isCrmUser || isAdmin) && <CRMLog helpRequestId={caso.id} />}
             {isAdmin && <DeleteHelpRequest helpRequestId={caso.id} onDelete={() => setDeleted(true)} />}
           </div>
         </div>

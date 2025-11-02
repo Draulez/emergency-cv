@@ -5,9 +5,9 @@ import { HeartHandshake } from 'lucide-react';
 import { useSession } from '@/context/SessionProvider';
 import OfferCard from '@/components/OfferCard';
 import Link from 'next/link';
-import { HelpRequestData } from '@/types/Requests';
+import { SelectedHelpData } from '@/types/Requests';
 import { useQuery } from '@tanstack/react-query';
-import { helpRequestService } from '@/lib/service';
+import { getOffersByUser } from '@/lib/actions';
 
 export default function ListaSolicitudesPage() {
   return (
@@ -21,9 +21,9 @@ function ListaSolicitudes() {
   const session = useSession();
   const userId = session.user?.id;
 
-  const { data, isLoading, error } = useQuery<HelpRequestData[]>({
+  const { data, isLoading, error } = useQuery<SelectedHelpData[]>({
     queryKey: ['help_requests', { user_id: userId, type: 'ofrece' }],
-    queryFn: () => helpRequestService.getOffersByUser(userId),
+    queryFn: () => getOffersByUser(userId || ''),
   });
 
   if (isLoading) {
